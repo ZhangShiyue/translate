@@ -42,7 +42,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 import data_utils
-import __seq2seq_model
+import seq2seq_model
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
 tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
@@ -117,7 +117,7 @@ def read_data(source_path, target_path, max_size=None):
 def create_model(session, forward_only):
     """Create translation model and initialize or load parameters in session."""
     dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
-    model = __seq2seq_model.Seq2SeqModel(
+    model = seq2seq_model.Seq2SeqModel(
             FLAGS.en_vocab_size,
             FLAGS.fr_vocab_size,
             _buckets,
