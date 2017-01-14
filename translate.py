@@ -61,12 +61,14 @@ tf.app.flags.DEFINE_integer("max_train_data_size", 0,
                             "Limit on the size of training data (0: no limit).")
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
-tf.app.flags.DEFINE_boolean("decode", False,
+tf.app.flags.DEFINE_boolean("decode", True,
                             "Set to True for interactive decoding.")
 tf.app.flags.DEFINE_boolean("self_test", False,
                             "Run a self-test if this is set to True.")
 tf.app.flags.DEFINE_boolean("use_fp16", False,
                             "Train using fp16 instead of fp32.")
+tf.app.flags.DEFINE_integer("beam_size", 5,
+                            "The size of beam search. Do greedy search when set this to 1.")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -127,6 +129,7 @@ def create_model(session, forward_only):
             FLAGS.batch_size,
             FLAGS.learning_rate,
             FLAGS.learning_rate_decay_factor,
+            FLAGS.beam_size,
             forward_only=forward_only,
             dtype=dtype)
     ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
@@ -254,7 +257,9 @@ def decode():
             _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
                                              target_weights, bucket_id, True)
             # This is a greedy decoder - outputs are just argmaxes of output_logits.
-            outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+            # outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+            # beam search best result
+            outputs = [int(logit) for logit in output_logits]
             # If there is an EOS symbol in outputs, cut them at that point.
             if data_utils.EOS_ID in outputs:
                 outputs = outputs[:outputs.index(data_utils.EOS_ID)]
