@@ -47,16 +47,16 @@ import seq2seq_model
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
 tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
                           "Learning rate decays by this much.")
-tf.app.flags.DEFINE_float("max_gradient_norm", 5.0,
+tf.app.flags.DEFINE_float("max_gradient_norm", 1.0,
                           "Clip gradients to this norm.")
-tf.app.flags.DEFINE_integer("batch_size", 64,
+tf.app.flags.DEFINE_integer("batch_size", 80,
                             "Batch size to use during training.")
-tf.app.flags.DEFINE_integer("size", 256, "Size of each model layer.")
+tf.app.flags.DEFINE_integer("size", 1000, "Size of each model layer.")
 tf.app.flags.DEFINE_integer("num_layers", 1, "Number of layers in the model.")
-tf.app.flags.DEFINE_integer("en_vocab_size", 40000, "English vocabulary size.")
-tf.app.flags.DEFINE_integer("fr_vocab_size", 40000, "French vocabulary size.")
-tf.app.flags.DEFINE_string("data_dir", "../translate_test/data", "Data directory")
-tf.app.flags.DEFINE_string("train_dir", "./__train", "Training directory.")
+tf.app.flags.DEFINE_integer("en_vocab_size", 30000, "English vocabulary size.")
+tf.app.flags.DEFINE_integer("fr_vocab_size", 30000, "French vocabulary size.")
+tf.app.flags.DEFINE_string("data_dir", "./data/", "Data directory")
+tf.app.flags.DEFINE_string("train_dir", "./train/", "Training directory.")
 tf.app.flags.DEFINE_integer("max_train_data_size", 0,
                             "Limit on the size of training data (0: no limit).")
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
@@ -72,7 +72,7 @@ FLAGS = tf.app.flags.FLAGS
 
 # We use a number of buckets and pad to the closest one for efficiency.
 # See seq2seq_model.Seq2SeqModel for details of how they work.
-_buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
+_buckets = [(10, 10), (15, 15), (25, 25), (40, 40)]
 
 
 def read_data(source_path, target_path, max_size=None):
@@ -142,9 +142,13 @@ def create_model(session, forward_only):
 def train():
     """Train a en->fr translation model using WMT data."""
     # Prepare WMT data.
-    print("Preparing WMT data in %s" % FLAGS.data_dir)
-    en_train, fr_train, en_dev, fr_dev, _, _ = data_utils.prepare_wmt_data(
-            FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size)
+    # print("Preparing WMT data in %s" % FLAGS.data_dir)
+    # en_train, fr_train, en_dev, fr_dev, _, _ = data_utils.prepare_wmt_data(
+    #         FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size)
+    en_train = FLAGS.data_dir + "small.training.zh-en.en.ids30000.en"
+    zh_train = FLAGS.data_dir + "small.training.zh-en.zh.ids30000.zh"
+    en_dev = FLAGS.data_dir + "devset1_2.lc.en0.ids30000.en"
+    zh_dev = FLAGS.data_dir + "devset1_2.zh.ids30000.zh"
 
     with tf.Session() as sess:
         # Create model.
@@ -154,9 +158,9 @@ def train():
         # Read data into buckets and compute their sizes.
         print("Reading development and training data (limit: %d)."
               % FLAGS.max_train_data_size)
-        dev_set = read_data(en_dev, fr_dev)
+        dev_set = read_data(en_dev, zh_dev)
         # print("here finished dev")
-        train_set = read_data(en_train, fr_train, FLAGS.max_train_data_size)
+        train_set = read_data(en_train, zh_train, FLAGS.max_train_data_size)
         # print("finished train")
         train_bucket_sizes = [len(train_set[b]) for b in xrange(len(_buckets))]
         train_total_size = float(sum(train_bucket_sizes))
@@ -229,7 +233,7 @@ def decode():
         en_vocab_path = os.path.join(FLAGS.data_dir,
                                      "vocab%d.en" % FLAGS.en_vocab_size)
         fr_vocab_path = os.path.join(FLAGS.data_dir,
-                                     "vocab%d.fr" % FLAGS.fr_vocab_size)
+                                     "vocab%d.zh" % FLAGS.fr_vocab_size)
         en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
         _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
 
