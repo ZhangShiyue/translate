@@ -202,8 +202,6 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell, bea
                                                  [attention_vec_size]))
 
         state = initial_state
-        if loop_function is not None:
-            state = tf.concat(0, [state for _ in range(beam_size)])
 
         def attention(query):
             """Put attention masks on hidden using hidden_features and query."""
@@ -233,10 +231,8 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell, bea
         outputs = []
         symbols = []
         prev = None
-        prev_probs = array_ops.zeros((beam_size,))
+        prev_probs = [0]
         batch_attn_size = array_ops.pack([batch_size, attn_size])
-        if loop_function is not None:
-            batch_attn_size = array_ops.pack([beam_size, attn_size])
         attns = [array_ops.zeros(batch_attn_size, dtype=dtype)
                  for _ in xrange(num_heads)]
         for attn in attns:  # Ensure the second shape of attention vectors is set.
@@ -244,11 +240,8 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell, bea
         if initial_state_attention:
             attns = attention(initial_state)
         for i, inp in enumerate(decoder_inputs):
-            if loop_function is not None and i == 0:
-                inp = tf.concat(0, [inp for _ in range(beam_size)])
             if i > 0:
                 variable_scope.get_variable_scope().reuse_variables()
-
             # If loop_function is set, we use it instead of decoder_inputs.
             if loop_function is not None and prev is not None:
                 with variable_scope.variable_scope("loop_function", reuse=True):
