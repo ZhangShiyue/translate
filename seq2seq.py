@@ -277,11 +277,21 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell, bea
             outputs.append(output)
 
         if loop_function is not None:
+            # process the last symbol
+            inp, prev_probs, index, prev_symbol = loop_function(prev, prev_probs, beam_size, i + 1)
+            state = array_ops.gather(state, index)  # update prev state
+            for j, output in enumerate(outputs):
+                outputs[j] = array_ops.gather(output, index)  # update prev outputs
+            for j, symbol in enumerate(symbols):
+                symbols[j] = array_ops.gather(symbol, index)  # update prev symbols
+            symbols.append(prev_symbol)
+
             # output the final best result of beam search
             m = math_ops.arg_max(prev_probs, 0)
             for k, symbol in enumerate(symbols):
                 symbols[k] = array_ops.gather(symbol, m)
             state = array_ops.expand_dims(array_ops.gather(state, m), 0)
+
 
     return outputs, state, symbols
 
