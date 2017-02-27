@@ -171,7 +171,7 @@ class Seq2SeqModel(object):
             #             for output in self.outputs[b]
             #             ]
         else:
-            self.outputs, self.losses, _ = seq2seq.model_with_buckets(
+            self.outputs, self.losses, self.symbols = seq2seq.model_with_buckets(
                     self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, buckets,
                     lambda x, y: seq2seq_f(x, y, False),
@@ -247,8 +247,12 @@ class Seq2SeqModel(object):
             output_feed = [self.losses[bucket_id]]  # Loss for this batch.
             # for l in xrange(decoder_size):  # Output logits.
             #     output_feed.append(self.outputs[bucket_id][l])
-            for l in xrange(len(self.symbols[bucket_id])):  # Output symbols.
-                output_feed.append(self.symbols[bucket_id][l])
+            if self.symbols[0]:
+                for l in xrange(decoder_size):  # Output symbols
+                    output_feed.append(self.symbols[bucket_id][l])
+            else:
+                for l in xrange(decoder_size):  # Output logits.
+                    output_feed.append(self.outputs[bucket_id][l])
 
         outputs = session.run(output_feed, input_feed)
         if not forward_only:

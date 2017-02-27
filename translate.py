@@ -61,7 +61,7 @@ tf.app.flags.DEFINE_integer("max_train_data_size", 0,
                             "Limit on the size of training data (0: no limit).")
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
-tf.app.flags.DEFINE_boolean("decode", True,
+tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for interactive decoding.")
 tf.app.flags.DEFINE_boolean("self_test", False,
                             "Run a self-test if this is set to True.")
@@ -145,13 +145,9 @@ def create_model(session, forward_only):
 def train():
     """Train a en->fr translation model using WMT data."""
     # Prepare WMT data.
-    # print("Preparing WMT data in %s" % FLAGS.data_dir)
-    # en_train, fr_train, en_dev, fr_dev, _, _ = data_utils.prepare_wmt_data(
-    #         FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size)
-    en_train = FLAGS.data_dir + "small.training.zh-en.en.ids30000.en"
-    zh_train = FLAGS.data_dir + "small.training.zh-en.zh.ids30000.zh"
-    en_dev = FLAGS.data_dir + "devset1_2.lc.en0.ids30000.en"
-    zh_dev = FLAGS.data_dir + "devset1_2.zh.ids30000.zh"
+    print("Preparing WMT data in %s" % FLAGS.data_dir)
+    en_train, fr_train, en_dev, fr_dev, en_vocab_path, fr_vocab_path = data_utils.prepare_wmt_data(
+            FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size)
 
     with tf.Session() as sess:
         # Create model.
@@ -161,9 +157,9 @@ def train():
         # Read data into buckets and compute their sizes.
         print("Reading development and training data (limit: %d)."
               % FLAGS.max_train_data_size)
-        dev_set = read_data(en_dev, zh_dev)
+        dev_set = read_data(en_dev, fr_dev)
         # print("here finished dev")
-        train_set = read_data(en_train, zh_train, FLAGS.max_train_data_size)
+        train_set = read_data(en_train, fr_train, FLAGS.max_train_data_size)
         # print("finished train")
         train_bucket_sizes = [len(train_set[b]) for b in xrange(len(_buckets))]
         train_total_size = float(sum(train_bucket_sizes))
