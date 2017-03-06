@@ -292,7 +292,6 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell, bea
                 symbols[k] = array_ops.gather(symbol, m)
             state = array_ops.expand_dims(array_ops.gather(state, m), 0)
 
-
     return outputs, state, symbols
 
 
