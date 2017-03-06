@@ -1,6 +1,6 @@
 This code is derived from original seq2seq translation model on tensorflow(0.10.0).
 
-NOw, beam search has been added to decoding.
+Now, beam search has been added to decoding.
 
 ----------------
 Train
