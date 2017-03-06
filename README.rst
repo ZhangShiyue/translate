@@ -25,7 +25,7 @@ Command line for testing::
         perl ./multi-bleu.perl data/devtest/test.fr < test_result.397200
 
 I haved changed interactive decoding to test the BLUE on test set. Test set is also Wmt15, same as dev set,
-but it is tokenized before used to test BLUE score.
+but it is tokenized before used to test BLUE score. The beam_size of beam search is 5 by default.
 Run above two command lines, I got BLUE = 6.66. I should say it is not a reasonable performance. I also tried interactive
 decoding, which is also barely satisfactory::
 
@@ -37,5 +37,19 @@ decoding, which is also barely satisfactory::
         _UNK , je _UNK à _UNK pour acheter des vêtements .
         > Tom had a dog named Jerry.
         Tom avait un _UNK _UNK .
+
+To figure out the reason of poor performance, I inspected the "alignments" of attention model. And I found a bug in original
+code. I found the alignments is almost same through out a sentence, which is contradict to the goal of attention, to find
+related source words to attend.
+
+So, I examined 'seq2seq.py' code carefully, and found the original initialization of 'AttnV' variable is quite improper.
+'AttnV' is randomly initialized from [-sqrt(3), +sqrt(3)] uniform distribution, so initial value is too large which makes
+initial alignments approximate to a one-hot vector and thus the gradients on 'AttenV', 'AttnW' are rather small. Therefore,
+the alignment model cannot be trained.
+
+I solve this problem by constantly initializing 'AttnV' to 0.
+
+This change improves the performance on BTEC Zh-En corpus by more than 3 blue score (from 43.0 to 46.71).
+I'm testing it on En-Fr data...
 
 Feel free to contact me by email (byryuer at gmail com) if you have any questions.

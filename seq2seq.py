@@ -68,6 +68,7 @@ from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
+from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import variable_scope
@@ -199,7 +200,7 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell, bea
                                             [1, 1, attn_size, attention_vec_size])
             hidden_features.append(nn_ops.conv2d(hidden, k, [1, 1, 1, 1], "SAME"))
             v.append(variable_scope.get_variable("AttnV_%d" % a,
-                                                 [attention_vec_size]))
+                                                 [attention_vec_size], initializer=init_ops.constant_initializer(0.0)))
 
         state = initial_state
 
