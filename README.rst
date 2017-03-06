@@ -1,6 +1,6 @@
 This code is derived from original seq2seq translation model on tensorflow(0.10.0).
 
-Now, beam search has been added to decoding.
+NOw, beam search has been added to decoding.
 
 ----------------
 Train
@@ -25,7 +25,8 @@ Command line for testing::
         perl ./multi-bleu.perl data/devtest/test.fr < test_result.397200
 
 I haved changed interactive decoding to test the BLUE on test set. Test set is also Wmt15, same as dev set,
-but it is tokenized before used to test BLUE score. The beam_size of beam search is 5 by default.
+but it should be tokenized before used to test BLUE score. The beam_size of beam search is 5 by default.
+
 Run above two command lines, I got BLUE = 6.66. I should say it is not a reasonable performance. I also tried interactive
 decoding, which is also barely satisfactory::
 
@@ -39,11 +40,12 @@ decoding, which is also barely satisfactory::
         Tom avait un _UNK _UNK .
 
 To figure out the reason of poor performance, I inspected the "alignments" of attention model. And I found a bug in original
-code. I found the alignments is almost same through out a sentence, which is contradict to the goal of attention, to find
-related source words to attend.
+code. I found the alignments are almost same through out a sentence, which is contradict to the goal of attention, to find
+related source words to attend. I also found this problem on BTEC Zh-En data. I believe this is a common problem no matter
+which data you use.
 
 So, I examined 'seq2seq.py' code carefully, and found the original initialization of 'AttnV' variable is quite improper.
-'AttnV' is randomly initialized from [-sqrt(3), +sqrt(3)] uniform distribution, so initial value is too large which makes
+'AttnV' is randomly initialized from [-sqrt(3), +sqrt(3)] uniform distribution, so initial value is so large that makes
 initial alignments approximate to a one-hot vector and thus the gradients on 'AttenV', 'AttnW' are rather small. Therefore,
 the alignment model cannot be trained.
 
