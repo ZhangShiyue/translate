@@ -49,9 +49,17 @@ So, I examined 'seq2seq.py' code carefully, and found the original initializatio
 initial alignments approximate to a one-hot vector and thus the gradients on 'AttenV', 'AttnW' are rather small. Therefore,
 the alignment model cannot be trained.
 
-I solve this problem by constantly initializing 'AttnV' to 0.
+I solved this problem by constantly initializing 'AttnV' to 0, and tested the new-trained model 'translate.ckpt-397000',
+which got BLUE = 17.09. Show interactive decoding results below::
 
-This change improves the performance on BTEC Zh-En corpus by more than 3 blue score (from 43.0 to 46.71).
-I'm testing it on En-Fr data...
+        > Who is the president of the United States?
+        Qui est le président des États-Unis ?
+        > There are several people at the train station.
+        Il y a plusieurs personnes à la station .
+        > Yesterday, I went to the mall to buy new clothes.
+        _UNK , je suis allé au _UNK pour acheter de nouveaux vêtements .
+        > Tom had a dog named Jerry.
+        Tom avait un chien nommé _UNK .
+
 
 Feel free to contact me by email (byryuer at gmail com) if you have any questions.

@@ -245,7 +245,7 @@ def decode():
         _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
 
         # Decode from standard input.
-        # sys.stdout.write("> ")
+        sys.stdout.write("> ")
         sys.stdout.flush()
         sentence = sys.stdin.readline()
         while sentence:
@@ -273,7 +273,7 @@ def decode():
                 outputs = outputs[:outputs.index(data_utils.EOS_ID)]
             # Print out French sentence corresponding to outputs.
             print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
-            # print("> ", end="")
+            print("> ", end="")
             sys.stdout.flush()
             sentence = sys.stdin.readline()
 
